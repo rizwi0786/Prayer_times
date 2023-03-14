@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- <base href="/"> -->
+     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>prayer test</title>
+</head>
+
+<body>
+    <h1>Prayer test</h1>
+    <div>
+        <img src="./images/bakk.jpg" alt="adjthfil">
+    </div>
+
+    <p id="test">jkafdhialhg</p>
+    <p id="test2">klfdaskjgh</p>
+    <p id="test3"></p>
+    <div class="search-container">
+        <label for="city">Address</label>
+        <div>
+            <input type="text" placeholder="Enter a address" id="city">
+        </div>
+
+
+
+        <label for="mthd">Method:</label>
+        <div>
+            <select name="mymthd" id="mthd">
+                <option value="0">Hanafi(Shafaq General)</option>
+                <option value="1">Hanafi(Shafaq Abyad)</option>
+                <option value="2">Shaf'i , Maliki, Hanbali</option>
+                <option value="3">Jafri(Ithna Ashari)</option>
+            </select>
+        </div>
+
+        <label for="tfor">Time format:</label>
+        <div>
+            <select name="tfo" id="tfor">
+                <option value="1">12 hours</option>
+                <option value="0">24 hours</option>
+
+            </select>
+        </div>
+
+        <button id="search-btn">Search</button>
+        <!-- <input type="text"> -->
+    </div>
+    <script>
+        var x = document.getElementById("test");
+        var y = document.getElementById("test2");
+        var z = document.getElementById("test3");
+        var lat, lon, t_zo;
+        var yr;
+        var sset;
+        const d = new Date();
+        var start = new Date(d.getFullYear(), 0, 0);
+        var diff = d - start;
+        var oneDay = 1000 * 60 * 60 * 24;
+        var day = Math.floor(diff / oneDay);
+        // console.log('Day of year: ' + day);
+
+        yr = d.toLocaleDateString('en-US', { year: 'numeric' });
+        // let searchBtn = document.getElementById("search-btn");
+        let cityRef = document.getElementById("city");
+        // let TimeZone = document.getElementById("TZone");
+        let Methodp = document.getElementById("mthd");
+        let TimeFormat = document.getElementById("tfor");
+        // let year_d = document.getElementById("yrr");
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(howPosition);
+            } else {
+                x.innerHTML = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        function howPosition(position) {
+            //   x.innerHTML = "Latitude: " + position.coords.latitude +
+            //   "<br>Longitude: " + position.coords.longitude;
+            lon = position.coords.longitude;
+            lat = position.coords.latitude;
+            console.log(lat);
+            console.log(lon);
+            x.innerHTML = "Latitude: " + position.coords.latitude;
+            y.innerHTML = "longitude: " + position.coords.longitude;
+
+            API_key = "bfbbc2f622d38d5d40c63e2633b83dde";
+            API_url = `http://api.positionstack.com/v1/reverse?access_key=${API_key}&query=${lat},${lon}&timezone_module=1&sun_module=1`;
+            console.log(API_url);
+
+
+            fetch(API_url)
+                .then((resp) => resp.json())
+                //If city name is valid
+                .then((data) => {
+                    console.log(data);
+                    // console.log(data);
+                    console.log(data.data[0]);
+                    console.log(data.data[0].locality);
+                    console.log(data.data[0].label);
+                    console.log(data.data[0].country);
+                    ////assign value in form
+                    cityRef.value = data.data[0].locality;
+                    t_zo = data.data[0].timezone_module.name;
+
+                    Methodp.value = 0;
+                    TimeFormat.value = 1;
+                    // year_d.value=yr;
+
+                    console.log(t_zo);
+
+                    var st_time = new Date(data.data[0].sun_module.set.time * 1000);
+                    sset = st_time.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: 'numeric'
+                    });
+                    console.log(sset);
+                    API_url2 = `https://www.moonsighting.com/time_json.php?year=${yr}&tz=${t_zo}&lat=${lat}&lon=${lon}&method=0&both=false&time=1`;
+                    console.log(API_url2);
+
+                    fetch(API_url2)
+                        .then((resp2) => resp2.json())
+                        //If city name is valid
+                        .then((data2) => {
+                            console.log(data2);
+
+                            console.log(data2.times[day - 1]);
+                            console.log(data2.times[day - 1].times);
+                            console.log(data2.times[day - 1].times.fajr);
+                            console.log(data2.times[day - 1].times.dhuhr);
+                            console.log(data2.times[day - 1].times.asr);
+                            console.log(data2.times[day - 1].times.maghrib);
+                            console.log(data2.times[day - 1].times.isha);
+
+                            z.innerHTML = `${(data2.times[day - 1].times.sunrise).toUpperCase()} ${sset}`;
+
+
+                        });
+
+                });
+            // console.log(API_key)
+            // cityRef.value=t_zo;
+
+        }
+        getLocation();
+
+    </script>
+    <script>
+        let searchBtn = document.getElementById("search-btn");
+        let cityRef_s = document.getElementById("city");
+        // let TimeZone_s = document.getElementById("TZone");
+        let Methodp_s = document.getElementById("mthd");
+        let TimeFormat_s = document.getElementById("tfor");
+
+
+        API_key = "bfbbc2f622d38d5d40c63e2633b83dde";
+        let gettime = () => {
+            let cityValue = cityRef_s.value;
+            // let f="dfhdff"
+            // console.log(cityValue);
+            var api_s = `http://api.positionstack.com/v1/forward?access_key=${API_key}&query=${cityValue}&timezone_module=1&sun_module=1`;
+            ;
+            console.log(api_s);
+            // console.log(year_s.value);
+            console.log(yr);
+
+            cityRef_s.value = "";
+            fetch(api_s)
+                .then((resp2) => resp2.json())
+                //If city name is valid
+                .then((data2) => {
+                    console.log(data2);
+                    ///value already
+                    var lat_s = data2.data[0].latitude;
+                    var lon_s = data2.data[0].longitude;
+                    var city_name = data2.data[0].locality;
+                    var yrr_s = yr;
+                    var tz_s = data2.data[0].timezone_module.name;
+                    console.log(tz_s);
+                    var s_setu = new Date(data2.data[0].sun_module.set.time * 1000);
+                    sset_s = s_setu.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: 'numeric'
+                    });
+                    console.log(sset_s);
+
+                    API_pr_s = `https://www.moonsighting.com/time_json.php?year=${yrr_s}&tz=${tz_s}&lat=${lat_s}&lon=${lon_s}&method=${Methodp_s.value}&both=false&time=${TimeFormat_s.value}`;
+                    console.log(API_pr_s);
+
+                    fetch(API_pr_s)
+                        .then((resp3) => resp3.json())
+                        //If city name is valid
+                        .then((data3) => {
+                            console.log(data3);
+
+                            console.log(data3.times[day - 1]);
+                            console.log(data3.times[day - 1].times);
+                            console.log(data3.times[day - 1].times.fajr);
+                            console.log(data3.times[day - 1].times.dhuhr);
+                            console.log(data3.times[day - 1].times.asr);
+                            console.log(data3.times[day - 1].times.maghrib);
+                            console.log(data3.times[day - 1].times.isha);
+
+                            // z.innerHTML = `${(data3.times[day - 1].times.sunrise).toUpperCase()} ${sset}`;
+                            console.log(sset_s);
+
+                        });
+
+                })
+
+        }
+        searchBtn.addEventListener("click", gettime);
+    </script>
+</body>
+
+</html>
